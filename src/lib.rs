@@ -22,14 +22,7 @@ impl TypingExtension {
             id,
             &zed::LanguageServerInstallationStatus::CheckingForUpdate,
         );
-        let latest = match zed::npm_package_latest_version(SERVER_PACKAGE) {
-            Ok(version) => version,
-            Err(_) if exists => {
-                self.did_install = true;
-                return Ok(SERVER_PATH.to_string());
-            }
-            Err(err) => return Err(err),
-        };
+        let latest = zed::npm_package_latest_version(SERVER_PACKAGE)?;
         let installed = zed::npm_package_installed_version(SERVER_PACKAGE)?;
 
         if !exists || installed.as_deref() != Some(latest.as_str()) {
