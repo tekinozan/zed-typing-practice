@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "v*.*.*"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -33,6 +34,7 @@ jobs:
       - run: npm ci
 
       - name: Verify tag and package version
+        if: github.event_name == 'push'
         shell: bash
         run: |
           version=$(node -p "require('./package.json').version")
@@ -42,6 +44,7 @@ jobs:
           }
 
       - name: Publish package once
+        if: github.event_name == 'push'
         shell: bash
         run: |
           version=$(node -p "require('./package.json').version")
@@ -50,6 +53,25 @@ jobs:
           else
             npm publish --access public
           fi
+
+      - name: Probe trusted publishing without releasing
+        if: github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: |
+          set +e
+          output=$(npm publish --access public 2>&1)
+          status=$?
+          echo "${output}"
+          if [ "${status}" -eq 0 ]; then
+            echo "::error::Probe published a release; it should only ever hit an existing version"
+            exit 1
+          fi
+          if grep -qiE "cannot publish over|previously published version" <<<"${output}"; then
+            echo "::notice::Trusted publishing works: npm authenticated the OIDC token and rejected the duplicate version"
+            exit 0
+          fi
+          echo "::error::Trusted publishing is not usable from this workflow; see the npm error above"
+          exit 1
 
   update-zed-registry:
     name: Update existing Zed registry entry
