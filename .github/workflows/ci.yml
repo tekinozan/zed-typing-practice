@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+
+jobs:
+  server:
+    name: Language server (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      - run: npm ci
+
+      # `npm test` derlemeyi de yapar (build && node --test).
+      # Uçtan uca testler gerçek sunucuyu `node dist/server.js --stdio` ile başlatır.
+      - run: npm test
+
+  extension:
+    name: Extension (wasm32-wasip2)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-wasip2
+
+      - uses: Swatinem/rust-cache@v2
+
+      - run: cargo fmt --check
+      - run: cargo clippy --target wasm32-wasip2 -- -D warnings
+      - run: cargo build --release --target wasm32-wasip2
+
+  manifest:
+    name: Manifest sanity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # extension.toml ile Cargo.toml ve server/package.json sürümleri
+      # ayrışırsa yayın sırasında yanlış sürüm etiketlenir.
+      - name: Versions agree
+        run: |
+          ext=$(grep -m1 '^version' extension.toml | cut -d'"' -f2)
+          crate=$(grep -m1 '^version' Cargo.toml | cut -d'"' -f2)
+          srv=$(node -p "require('./server/package.json').version")
+          lock=$(node -p "require('./server/package-lock.json').version")
+          echo "extension.toml=$ext Cargo.toml=$crate server=$srv package-lock=$lock"
+          test "$ext" = "$crate" || { echo "::error::extension.toml ($ext) != Cargo.toml ($crate)"; exit 1; }
+          test "$ext" = "$srv"   || { echo "::error::extension.toml ($ext) != server/package.json ($srv)"; exit 1; }
+          test "$ext" = "$lock"  || { echo "::error::extension.toml ($ext) != server/package-lock.json ($lock)"; exit 1; }
+
+      - name: Required manifest fields are real
+        run: |
+          for field in id name version schema_version authors description repository; do
+            grep -q "^$field" extension.toml || { echo "::error::extension.toml missing $field"; exit 1; }
+          done
+          grep -q 'diyarozantekin@gmail.com' extension.toml \
+            || { echo "::error::extension.toml must use the personal author email"; exit 1; }
+          grep -q '^\[grammars.typing\]' extension.toml \
+            || { echo "::error::extension.toml missing the Typing grammar"; exit 1; }
+          grep -Eq '^rev = "[0-9a-f]{40}"$' extension.toml \
+            || { echo "::error::Typing grammar revision must be a full commit SHA"; exit 1; }
+          grep -q '^grammar = "typing"$' languages/typing/config.toml \
+            || { echo "::error::Typing language must reference its grammar"; exit 1; }
+          grep -qi 'your-name\|you@example\|Your Name' extension.toml server/package.json \
+            && { echo "::error::publishing metadata contains a placeholder"; exit 1; }
+          echo "manifest ok"

@@ -1,0 +1,72 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  publish-language-server:
+    name: Publish language server to npm
+    needs: ci
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      - run: npm ci
+
+      - name: Verify tag and package version
+        shell: bash
+        run: |
+          version=$(node -p "require('./package.json').version")
+          test "${GITHUB_REF_NAME}" = "v${version}" || {
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match package version v${version}"
+            exit 1
+          }
+
+      - name: Publish package once
+        shell: bash
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if npm view "zed-typing-lsp@${version}" version >/dev/null 2>&1; then
+            echo "zed-typing-lsp@${version} is already published"
+          else
+            npm publish --access public --provenance
+          fi
+
+  submit-to-zed:
+    name: Open Zed registry pull request
+    needs: publish-language-server
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Submit extension update
+        uses: huacnlee/zed-extension-action@82920ff0876879f65ffbcfa3403589114a8919c6
+        with:
+          extension-name: typing-practice
+          tag: ${{ github.ref_name }}
+          create-pullrequest: true
+        env:
+          COMMITTER_TOKEN: ${{ secrets.ZED_REGISTRY_TOKEN }}

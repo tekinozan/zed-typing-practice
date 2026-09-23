@@ -1,0 +1,15 @@
+id = "typing-practice"
+name = "Typing Practice"
+version = "0.2.0"
+schema_version = 1
+authors = ["Diyar Ozan Tekin <diyarozantekin@gmail.com>"]
+description = "Practice typing speed without leaving the editor: multi-line ghost text, live WPM, accuracy and consistency, an in-buffer result card, and a single-file HTML report with a keyboard heat map."
+repository = "https://github.com/tekinozan/zed-typing-practice"
+
+[grammars.typing]
+repository = "https://github.com/tekinozan/tree-sitter-typing"
+rev = "ab375215fd5b2515a2a927d1e0668d984f19f7ab"
+
+[language_servers.typing-lsp]
+name = "Typing LSP"
+languages = ["Typing"]

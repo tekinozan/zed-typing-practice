@@ -1,0 +1,30 @@
+{
+  "name": "zed-typing-lsp",
+  "version": "0.2.0",
+  "description": "Language server powering the Typing Practice extension for Zed: test generation, live typing metrics and HTML reports.",
+  "keywords": ["zed", "zed-extension", "language-server", "typing", "wpm"],
+  "license": "MIT",
+  "author": "Diyar Ozan Tekin <diyarozantekin@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tekinozan/zed-typing-practice.git",
+    "directory": "server"
+  },
+  "main": "dist/server.js",
+  "bin": { "typing-lsp": "dist/server.js" },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "npm run build && node --test \"test/*.test.mjs\"",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "vscode-languageserver": "^9.0.1",
+    "vscode-languageserver-textdocument": "^1.0.12"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  }
+}

@@ -1,0 +1,5 @@
+target/
+extension.wasm
+grammars/
+server/node_modules/
+server/dist/

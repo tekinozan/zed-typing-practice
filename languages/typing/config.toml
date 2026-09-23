@@ -1,0 +1,7 @@
+name = "Typing"
+grammar = "typing"
+path_suffixes = ["typing"]
+line_comments = []
+# Parantez/tırnak otomatik kapanmasın: yazdığın her karakter senin olmalı.
+brackets = []
+tab_size = 4
