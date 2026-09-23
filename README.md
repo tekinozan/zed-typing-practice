@@ -1,4 +1,4 @@
-# Typing Practice — a Monkeytype-style typing test for Zed
+# Typing Practice — an in-editor typing test for Zed
 
 Open a `.typing` file and the test starts. The unwritten target text appears as
 multi-line faint ghost text, errors are underlined in red, and the line under

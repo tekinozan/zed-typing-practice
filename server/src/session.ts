@@ -27,7 +27,7 @@ export interface SecondSample {
 
 /** Bellek tavanı: uzun seanslarda olay listesi sınırsız büyümesin. */
 const MAX_EVENTS = 50_000;
-/** Monkeytype afk kuralı: bu süreden uzun duraklamalar süreden düşülür. */
+/** AFK kuralı: bu süreden uzun duraklamalar süreden düşülür. */
 const AFK_GAP_MS = 5_000;
 
 export class Session {
@@ -208,7 +208,7 @@ export class Session {
   /**
    * Hedefin sonuna varıldı mı — hatalar düzeltilmiş olmasa bile.
    *
-   * Bitiş koşulu budur: Monkeytype gibi, karakter hedefi dolunca test biter.
+   * Bitiş koşulu budur: karakter hedefi dolunca test biter.
    * `complete()` yalnızca sonuçtaki "tamamlandı" bayrağını belirler; bitişi ona
    * bağlamak, düzeltilmemiş tek bir harfin testi sonsuza dek açık bırakmasına
    * yol açardı.

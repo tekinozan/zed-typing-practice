@@ -1,7 +1,7 @@
 /**
  * Metrikler. Canlı durum satırı `liveSnapshot`, bitiş kartı/raporu `finalize` kullanır.
  *
- * Formüller Monkeytype ile aynı: wpm = doğru karakter / 5 / dakika,
+ * Formüller: wpm = doğru karakter / 5 / dakika,
  * raw = tüm tuşlar / 5 / dakika, tutarlılık = kogasa (cv → tanh) dönüşümü.
  */
 import type { TestMeta, TestSpec } from "./generate";

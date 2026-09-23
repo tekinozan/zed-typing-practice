@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Typing LSP — Zed içinde Monkeytype tarzı yazma testi.
+ * Typing LSP — Zed içinde çalışan yazma testi.
  *
  * Bu dosya yalnızca LSP kablolamasıdır: initialize, belge olayları, inlay hint,
  * hover, kod eylemleri, komutlar ve zamanlayıcılar. İş mantığı modüllerdedir:
