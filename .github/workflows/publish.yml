@@ -66,6 +66,7 @@ jobs:
         uses: huacnlee/zed-extension-action@82920ff0876879f65ffbcfa3403589114a8919c6
         with:
           extension-name: typing-practice
+          push-to: tekinozan/extensions
           tag: ${{ github.ref_name }}
           create-pullrequest: true
         env:
